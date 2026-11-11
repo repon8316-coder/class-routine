@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ক্লাস রুটিন বিল্ডার — প্রাণিবিদ্যা বিভাগ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;700&display=swap" rel="stylesheet">
+<style id="pageStyle">@page{size:A4 landscape;margin:0}</style>
+<style>
+:root{
+  --ink:#16211d; --muted:#5d6b66; --line:#d9e0dc; --bg:#f3f5f2; --panel:#ffffff;
+  --acc:#0b6e4f; --acc-2:#0f8a63; --acc-soft:#e3f3ec; --warn:#c2410c; --bad:#dc2626; --desk:#dfe4e0;
+  --ui:"Hind Siliguri","Nirmala UI","Segoe UI",system-ui,sans-serif;
+  --paper:"Cambria","Times New Roman","Noto Serif Bengali","Kalpurush","SolaimanLipi","Nirmala UI",serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--ui);color:var(--ink);background:var(--bg);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:400px 1fr;height:100vh}
+
+/* ---------- Panel ---------- */
+.panel{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.brand{padding:14px 18px 10px;border-bottom:1px solid var(--line)}
+.brand b{font-size:17px;letter-spacing:.2px}
+.brand small{display:block;color:var(--muted);font-size:12.5px}
+.tabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid var(--line);background:#fafbfa}
+.tabs button{flex:1;border:0;background:none;padding:8px 4px 9px;cursor:pointer;border-bottom:3px solid transparent;color:var(--muted);font-weight:600;font-size:13px;border-radius:6px 6px 0 0}
+.tabs button:hover{background:#eef2ef;color:var(--ink)}
+.tabs button.on{color:var(--acc);border-bottom-color:var(--acc);background:#fff}
+.pbody{flex:1;overflow:auto;padding:14px 16px 30px}
+.sec{margin-bottom:18px}
+.sec>h3{margin:0 0 8px;font-size:12.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:8px}
+.sec>h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.hint{background:var(--acc-soft);border:1px dashed #9ccdb9;border-radius:10px;padding:12px 14px;color:#0c4a37;font-size:13.5px}
+.hint kbd{background:#fff;border:1px solid #b9d8cb;border-radius:4px;padding:0 5px;font-family:Consolas,monospace;font-size:12px}
+.slot{background:var(--ink);color:#fff;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.slot b{font-size:16px}.slot span{opacity:.8;font-variant-numeric:tabular-nums}
+.erow{display:grid;grid-template-columns:8px 1.15fr .8fr 1.5fr 30px;gap:6px;align-items:center;margin-bottom:6px}
+.erow .bar{height:32px;border-radius:4px}
+.erow.bad select{border-color:var(--bad);background:#fff5f5}
+input[type=text],select,textarea{width:100%;border:1px solid #c9d2cd;border-radius:7px;padding:6px 8px;background:#fff;min-width:0}
+input[type=text]:focus,select:focus,textarea:focus{outline:2px solid var(--acc-2);outline-offset:0;border-color:var(--acc-2)}
+textarea{resize:vertical;min-height:70px}
+.btn{border:1px solid #c9d2cd;background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn:disabled{opacity:.4;cursor:default;border-color:#c9d2cd;color:inherit}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.pri:hover{background:var(--acc-2);color:#fff}
+.btn.dash{border-style:dashed;width:100%;justify-content:center;color:var(--acc)}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.ico{width:30px;height:32px;padding:0;justify-content:center;border-radius:7px;color:var(--muted)}
+.ico:hover{color:var(--bad);border-color:var(--bad)}
+.ico.n:hover{color:var(--acc);border-color:var(--acc)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px 3px 6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px}
+.chip i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.chip:hover{border-color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.lbl{font-size:12.5px;color:var(--muted);font-weight:600;margin:8px 0 3px;display:block}
+.trow{display:grid;grid-template-columns:34px 62px 1fr 30px;gap:6px;margin-bottom:6px;align-items:center}
+.trow input[type=color]{width:34px;height:32px;padding:2px;border:1px solid #c9d2cd;border-radius:7px;background:#fff;cursor:pointer}
+.lrow{display:grid;grid-template-columns:1fr 30px;gap:6px;margin-bottom:6px}
+.prow{display:grid;grid-template-columns:1fr auto 30px 30px 30px;gap:6px;margin-bottom:6px;align-items:center}
+.drow{display:grid;grid-template-columns:22px 1fr;gap:8px;margin-bottom:6px;align-items:center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label.ck{display:flex;gap:8px;align-items:center;padding:5px 0;cursor:pointer;font-weight:500}
+label.ck input{width:16px;height:16px;accent-color:var(--acc)}
+.seg{display:inline-flex;border:1px solid #c9d2cd;border-radius:8px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:6px 14px;cursor:pointer;font-weight:600}
+.seg button.on{background:var(--acc);color:#fff}
+table.st{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+table.st th,table.st td{padding:5px 4px;text-align:center;border-bottom:1px solid var(--line)}
+table.st th{color:var(--muted);font-size:11.5px;font-weight:700}
+table.st td:first-child,table.st th:first-child{text-align:left}
+table.st tr{cursor:pointer}table.st tbody tr:hover{background:#f4f7f5}
+.load{height:6px;border-radius:3px;background:#edf0ee;overflow:hidden;min-width:50px}
+.load i{display:block;height:100%}
+.cf{display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border:1px solid #fecaca;background:#fff5f5;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px}
+.cf:hover{border-color:var(--bad)}
+.ok{color:var(--acc);font-weight:600}
+
+/* ---------- Stage ---------- */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{display:flex;gap:10px;align-items:center;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.top select{width:auto;max-width:230px;font-weight:600}
+.top .sp{flex:1}
+.top .hl{display:flex;gap:5px;flex-wrap:wrap}
+.stage{flex:1;overflow:auto;background:var(--desk);padding:24px 28px 40px}
+.holder{margin:0 auto;position:relative}
+#warn{display:none;margin:0 auto 12px;max-width:760px;background:#fff7ed;border:1px solid #fdba74;color:#9a3412;padding:8px 14px;border-radius:8px;font-weight:600;text-align:center}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:9px 18px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;font-weight:600;z-index:9}
+#toast.on{opacity:1;transform:translateX(-50%)}
+
+/* ---------- Paper ---------- */
+.sheet{--fs:13px;background:#fff;color:#000;font-family:var(--paper);box-shadow:0 10px 40px rgba(20,40,30,.22),0 1px 3px rgba(0,0,0,.2);
+  display:flex;flex-direction:column;overflow:hidden;transform-origin:0 0;position:absolute;left:0;top:0;padding:9mm 11mm 8mm}
+.sheet.landscape{width:297mm;height:210mm}
+.sheet.portrait{width:210mm;height:297mm}
+.sh-head{display:flex;align-items:center;gap:14px;min-height:15mm}
+.sh-head img{height:21mm;max-width:34mm;object-fit:contain}
+.sh-head .l1{font-size:17pt;font-weight:700;line-height:1.25}
+.sh-head .l2{font-size:17pt;font-weight:700;line-height:1.25}
+.sh-title{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;margin:1mm 0 2.5mm}
+.sh-title h1{margin:0;font-size:16pt;font-weight:700;border-bottom:1.5px solid #000;padding:0 6px 1px;line-height:1.3}
+.sh-title .sub{font-size:11pt;font-weight:700}
+.sh-title .eff{text-align:right;font-size:10.5pt;font-weight:700}
+.tw{flex:1;min-height:0}
+table.rt{width:100%;height:100%;border-collapse:collapse;table-layout:fixed;font-size:var(--fs)}
+table.rt th,table.rt td{border:1.4px solid #000;text-align:center;vertical-align:middle;padding:.25em .2em}
+table.rt thead th{font-weight:700;background:#fff;padding:.18em .2em;font-size:1.05em}
+table.rt thead tr:last-child th{background:#d9d9d9;font-variant-numeric:tabular-nums}
+table.rt tbody th{font-size:1.15em;font-weight:700}
+table.rt thead tr:last-child th,table.rt thead{border-bottom:2.4px solid #000}
+.sheet.zebra tbody tr.z>th,.sheet.zebra tbody tr.z>td.cell{background:#dcdcdc}
+td.brk{background:#f1f1f1!important;font-weight:700;letter-spacing:.3em;writing-mode:vertical-rl}
+.en{font-weight:700;line-height:1.28;padding:0 .3em;border-radius:3px;margin:.06em auto;width:fit-content;max-width:100%;cursor:grab}
+.sheet.color .en{background:var(--tb);box-shadow:inset 3px 0 0 var(--tc);padding:.02em .45em .02em .6em}
+td.cell{cursor:pointer;position:relative}
+.sh-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:3mm;font-size:10.5pt;font-weight:700;gap:10mm}
+.sh-foot ol{margin:0;padding-left:9mm;line-height:1.45}
+.sh-foot ol.c2{columns:2;column-gap:12mm}
+.sh-foot li i{display:none}
+.sheet.color .sh-foot li i{display:inline-block;width:.7em;height:.7em;border-radius:2px;margin-right:.4em;background:var(--tc)}
+.sign{text-align:center;white-space:pre-line;line-height:1.45;margin-left:auto;padding-top:9mm}
+
+@media screen{
+  td.cell:hover{box-shadow:inset 0 0 0 2px rgba(11,110,79,.45)}
+  td.cell:empty:hover::after{content:"+";color:var(--acc);font:700 1.6em var(--ui)}
+  td.cell.sel{box-shadow:inset 0 0 0 3px var(--acc)!important}
+  td.cell.over{box-shadow:inset 0 0 0 3px #f59e0b!important}
+  .en.bad{outline:2px solid var(--bad);outline-offset:1px;color:var(--bad)}
+  .en.dim{opacity:.16}
+  .en.drag{opacity:.4}
+}
+@media print{
+  html,body{height:auto;background:#fff}
+  .app{display:block;height:auto}
+  .panel,.top,#warn,#toast{display:none!important}
+  .main,.stage{display:block;overflow:visible;padding:0;background:#fff}
+  .holder{width:auto!important;height:auto!important;margin:0}
+  .sheet{position:static;transform:none!important;box-shadow:none;break-inside:avoid;page-break-after:avoid}
+  .sheet.landscape{height:209.5mm}.sheet.portrait{height:296.5mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media (max-width:980px){.app{grid-template-columns:330px 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <div class="brand"><b>ক্লাস রুটিন বিল্ডার</b><small>ঘরে ক্লিক করুন → শিক্ষক ও ক্লাস বাছুন → প্রিন্ট</small></div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="pbody" id="pbody"></div>
+  </aside>
+  <section class="main">
+    <div class="top" id="top"></div>
+    <div class="stage" id="stage">
+      <div id="warn">⚠ লেখা এক পৃষ্ঠায় আঁটছে না — ফন্ট ছোট করুন বা "অটো-ফিট" চালু করুন।</div>
+      <div class="holder" id="holder"><div class="sheet" id="sheet"></div></div>
+    </div>
+  </section>
+</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ================= helpers ================= */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const h = (t, a = {}, ...c) => {
+  const e = document.createElement(t);
+  for (const k in a) {
+    const v = a[k];
+    if (k === 'value') continue;
+    if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (v === true) e.setAttribute(k, '');
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const x of c.flat(Infinity)) { if (x == null || x === false) continue; e.append(x.nodeType ? x : document.createTextNode(String(x))); }
+  if ('value' in a) e.value = a.value;
+  return e;
+};
+const tint = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+let toastT; const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); };
+
+/* ================= default data (আপনার বর্তমান রুটিন) ================= */
+function defaults() {
+  const T = [['AP', 'Md. Anwar Parvez', '#2563eb'], ['BH', 'Dr. Babul Hossain', '#b45309'], ['MR', 'Md. Moksadur Rahman', '#15803d'],
+             ['AG', 'Md. Abdul Gofur', '#be185d'], ['AM', 'Md. Abdul Awal Mondol', '#7c3aed'], ['RA', 'Most. Rumi Akhter', '#0e7490']];
+  const C = ['HSC-I', 'HSC-II', 'H-I', 'H-II', 'H-III', 'H-IV', 'D-I', 'D-II', 'D-III', 'NMH-I', 'NMH-II', 'ICT'];
+  const D = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const P = ['08.50–09.45', '09.45–10.30', '10.30–11.15', '11.30–12.15', '12.15–01.00', '01.00–01.45'];
+  const RAW = [
+    ['HSC-I@206/MR, HSC-II@321/AG, D-II/RA', 'H-I/AM, D-II/RA', 'HSC-II@321/RA, H-I/BH', 'HSC-I@205/BH, H-II/AM, H-I/AP, ICT@207/MR', 'H-II/AG', 'H-II/AG, H-IV/RA'],
+    ['HSC-I@207/AG, HSC-II@322/AM', 'H-IV/RA, H-I/MR', 'HSC-I@205/BH, H-I/MR', 'H-III/AM, H-IV/RA, ICT@323/MR', 'H-III/AG, H-IV/MR', 'H-III/AG, H-IV/MR'],
+    ['HSC-I@206/MR, D-I/AP', 'D-I/RA, H-I/AM', 'HSC-II@322/MR, H-I/AM, H-IV/RA', 'H-II/MR, H-III/AM', 'H-II/MR, H-IV/BH', 'H-III/RA, H-IV/AP'],
+    ['NMH-II/AM', 'HSC-II@322/BH, H-II/RA, NMH-II/AM', 'H-II/RA, NMH-I/MR', 'HSC-II@322/MR, H-II/AP, H-IV/AG', 'HSC-I@308/AM, H-III/MR, H-IV/AG', 'H-III/MR, NMH-I/AP'],
+    ['HSC-I@207/AG, D-III/RA', 'H-III/AM, D-III/AG', 'H-III/BH, HSC-I@308/AM, H-I/MR', 'HSC-II@321/RA, H-III/BH, H-IV/AM, ICT@308/MR', 'HSC-II@321/RA, H-I/AG, H-IV/AM', 'H-I/AG, D-II/RA']
+  ];
+  const grid = {};
+  RAW.forEach((row, d) => row.forEach((s, p) => {
+    grid[`d${d}|p${p}`] = s.split(',').map(x => {
+      const [cr, t] = x.trim().split('/'); const [c, r] = cr.split('@');
+      return { id: uid(), c: 'c_' + c, r: r || '', t: 't_' + t };
+    });
+  }));
+  return {
+    v: 1,
+    head: { l1: 'প্রাণিবিদ্যা বিভাগ', l2: 'রংপুর সরকারি কলেজ, রংপুর', title: 'ক্লাস রুটিন', eff: 'রুটিন কার্যকরঃ ২৮/০৯/২০২৬ইং',
+            sign: 'বিভাগীয় প্রধান\nপ্রাণিবিদ্যা বিভাগ\nরংপুর সরকারি কলেজ, রংপুর।' },
+    opt: { orient: 'landscape', auto: true, fs: 13, color: true, zebra: true, legend: true },
+    teachers: T.map(t => ({ id: 't_' + t[0], code: t[0], name: t[1], color: t[2] })),
+    classes: C.map(c => ({ id: 'c_' + c, name: c })),
+    rooms: ['205', '206', '207', '308', '321', '322', '323'],
+    days: D.map((n, i) => ({ id: 'd' + i, name: n, on: i < 5 })),
+    periods: P.map((l, i) => ({ id: 'p' + i, label: l, brk: false })),
+    grid
+  };
+}
+
+/* ================= state ================= */
+const LS = 'zoology-routine-v1', LSL = 'zoology-routine-logo';
+let S, logo = '';
+try { S = JSON.parse(localStorage.getItem(LS)); logo = localStorage.getItem(LSL) || ''; } catch (e) {}
+if (!S || !S.teachers || !S.grid) S = defaults();
+let sel = null, tab = 'routine', view = { type: 'all', id: '' }, hl = '', zoom = 1, clip = null;
+const hist = [], fut = [];
+const PALETTE = ['#2563eb', '#b45309', '#15803d', '#be185d', '#7c3aed', '#0e7490', '#dc2626', '#4d7c0f', '#c026d3', '#0369a1'];
+
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} };
+function mutate(fn) { hist.push(JSON.stringify(S)); if (hist.length > 150) hist.shift(); fut.length = 0; fn(); save(); renderAll(); }
+function undo() { if (!hist.length) return; fut.push(JSON.stringify(S)); S = JSON.parse(hist.pop()); save(); renderAll(); }
+function redo() { if (!fut.length) return; hist.push(JSON.stringify(S)); S = JSON.parse(fut.pop()); save(); renderAll(); }
+
+const key = (d, p) => d + '|' + p;
+const T = id => S.teachers.find(t => t.id === id);
+const C = id => S.classes.find(c => c.id === id);
+const days = () => S.days.filter(d => d.on);
+const pers = () => S.periods.filter(p => !p.brk);
+const cell = (d, p) => S.grid[key(d, p)] || (S.grid[key(d, p)] = []);
+const label = e => { const c = C(e.c), t = T(e.t); return (c ? c.name : '?') + (e.r ? ` (${e.r})` : '') + '_' + (t ? t.code : '?'); };
+
+function conflicts() {
+  const out = [];
+  for (const d of days()) for (const p of pers()) {
+    const es = S.grid[key(d.id, p.id)] || [];
+    [['t', 'শিক্ষক', v => (T(v) || {}).code], ['r', 'রুম', v => v], ['c', 'ক্লাস', v => (C(v) || {}).name]].forEach(([f, nm, show]) => {
+      const m = {}; es.forEach(e => { if (e[f]) (m[e[f]] = m[e[f]] || []).push(e.id); });
+      for (const v in m) if (m[v].length > 1) out.push({ d: d.id, p: p.id, ids: m[v], text: `${d.name} · ${p.label} — ${nm} ${show(v)} একসাথে ${m[v].length} জায়গায়` });
+    });
+  }
+  return out;
+}
+
+/* ================= sheet ================= */
+function renderSheet() {
+  const sh = $('#sheet'), o = S.opt, D = days(), bad = new Set(conflicts().flatMap(c => c.ids));
+  sh.className = 'sheet ' + o.orient + (o.color ? ' color' : '') + (o.zebra ? ' zebra' : '');
+  const show = e => view.type === 'all' || (view.type === 't' ? e.t === view.id : e.c === view.id);
+  let sub = '';
+  if (view.type === 't' && T(view.id)) sub = `শিক্ষক: ${T(view.id).name} (${T(view.id).code})`;
+  if (view.type === 'c' && C(view.id)) sub = `ক্লাস: ${C(view.id).name}`;
+
+  const cols = h('colgroup', {}, h('col', { style: 'width:11%' }), S.periods.map(p => h('col', { style: p.brk ? 'width:4%' : '' })));
+  const thead = h('thead', {},
+    h('tr', {}, h('th', { rowspan: 2 }, 'Day'), h('th', { colspan: S.periods.length }, 'Period/Time')),
+    h('tr', {}, S.periods.map(p => h('th', {}, p.brk ? '' : p.label))));
+  const tbody = h('tbody', {}, D.map((d, i) => h('tr', { class: i % 2 ? 'z' : '' },
+    h('th', {}, d.name),
+    S.periods.map(p => {
+      if (p.brk) return i === 0 ? h('td', { class: 'brk', rowspan: D.length, title: p.label }, 'বিরতি') : null;
+      const on = sel && sel.d === d.id && sel.p === p.id;
+      return h('td', {
+        class: 'cell' + (on ? ' sel' : ''), 'data-d': d.id, 'data-p': p.id,
+        onclick() { sel = { d: d.id, p: p.id }; tab = 'routine'; renderAll(); },
+        ondragover(ev) { ev.preventDefault(); ev.currentTarget.classList.add('over'); },
+        ondragleave(ev) { ev.currentTarget.classList.remove('over'); },
+        ondrop(ev) {
+          ev.preventDefault();
+          let src; try { src = JSON.parse(ev.dataTransfer.getData('text/plain')); } catch (e) { return; }
+          if (!src || (src.d === d.id && src.p === p.id)) { renderSheet(); return; }
+          mutate(() => {
+            const from = cell(src.d, src.p), i = from.findIndex(x => x.id === src.id); if (i < 0) return;
+            const it = ev.ctrlKey ? { ...from[i], id: uid() } : from.splice(i, 1)[0];
+            cell(d.id, p.id).push(it); sel = { d: d.id, p: p.id };
+          });
+        }
+      }, (S.grid[key(d.id, p.id)] || []).filter(show).map(e => {
+        const t = T(e.t) || { color: '#666' };
+        return h('div', {
+          class: 'en' + (bad.has(e.id) ? ' bad' : '') + (hl && e.t !== hl ? ' dim' : ''), draggable: 'true',
+          style: `--tc:${t.color};--tb:${tint(t.color, .15)}`,
+          ondragstart(ev) { ev.dataTransfer.setData('text/plain', JSON.stringify({ d: d.id, p: p.id, id: e.id })); ev.currentTarget.classList.add('drag'); },
+          ondragend(ev) { ev.currentTarget.classList.remove('drag'); }
+        }, label(e));
+      }));
+    }))));
+
+  sh.replaceChildren(
+    h('div', { class: 'sh-head' }, logo ? h('img', { src: logo, alt: '' }) : null,
+      h('div', {}, h('div', { class: 'l1' }, S.head.l1), h('div', { class: 'l2' }, S.head.l2))),
+    h('div', { class: 'sh-title' }, h('span', { class: 'sub' }, sub), h('h1', {}, S.head.title), h('span', { class: 'eff' }, S.head.eff)),
+    h('div', { class: 'tw' }, h('table', { class: 'rt' }, cols, thead, tbody)),
+    h('div', { class: 'sh-foot' },
+      o.legend ? h('ol', { class: S.teachers.length > 7 ? 'c2' : '' }, S.teachers.map(t => h('li', {}, h('i', { style: `--tc:${t.color}` }), `${t.name} (${t.code})`))) : null,
+      h('div', { class: 'sign' }, S.head.sign)));
+  fit();
+}
+function fit() {
+  const sh = $('#sheet');
+  if (S.opt.auto) {
+    let f = 15; sh.style.setProperty('--fs', f + 'px');
+    while (f > 6.5 && sh.scrollHeight > sh.clientHeight + 1) { f -= .5; sh.style.setProperty('--fs', f + 'px'); }
+  } else sh.style.setProperty('--fs', S.opt.fs + 'px');
+  $('#warn').style.display = sh.scrollHeight > sh.clientHeight + 1 ? 'block' : 'none';
+  scale();
+}
+function scale() {
+  const sh = $('#sheet'), w = sh.offsetWidth, hh = sh.offsetHeight;
+  const s = Math.min(1.4, ($('#stage').clientWidth - 60) / w) * zoom;
+  sh.style.transform = `scale(${s})`; $('#holder').style.width = w * s + 'px'; $('#holder').style.height = hh * s + 'px';
+}
+
+/* ================= top bar ================= */
+function renderTop() {
+  const v = view.type === 'all' ? 'all' : view.type + ':' + view.id;
+  $('#top').replaceChildren(
+    h('select', { title: 'কোন রুটিন দেখবেন/প্রিন্ট করবেন', value: v, onchange(e) { const x = e.target.value; view = x === 'all' ? { type: 'all', id: '' } : { type: x[0], id: x.slice(2) }; renderAll(); } },
+      h('option', { value: 'all' }, '📋 সম্পূর্ণ রুটিন'),
+      h('optgroup', { label: 'শিক্ষক-ভিত্তিক রুটিন' }, S.teachers.map(t => h('option', { value: 't:' + t.id }, `${t.code} — ${t.name}`))),
+      h('optgroup', { label: 'ক্লাস-ভিত্তিক রুটিন' }, S.classes.map(c => h('option', { value: 'c:' + c.id }, c.name)))),
+    h('div', { class: 'hl', title: 'ক্লিক করলে ঐ শিক্ষকের ক্লাসগুলো হাইলাইট হবে' }, S.teachers.map(t =>
+      h('button', { class: 'chip' + (hl === t.id ? ' on' : ''), onclick() { hl = hl === t.id ? '' : t.id; renderTop(); renderSheet(); } }, h('i', { style: `background:${t.color}` }), t.code))),
+    h('span', { class: 'sp' }),
+    h('button', { class: 'btn', disabled: !hist.length, title: 'Ctrl+Z', onclick: undo }, '↶ আনডু'),
+    h('button', { class: 'btn', disabled: !fut.length, title: 'Ctrl+Y', onclick: redo }, '↷ রিডু'),
+    h('div', { class: 'seg' },
+      h('button', { onclick() { zoom = Math.max(.4, zoom - .1); scale(); } }, '−'),
+      h('button', { onclick() { zoom = 1; scale(); } }, 'ফিট'),
+      h('button', { onclick() { zoom = Math.min(2.5, zoom + .1); scale(); } }, '+')),
+    h('button', { class: 'btn pri', onclick: doPrint }, '🖨 A4 প্রিন্ট / PDF'));
+}
+function doPrint() { $('#pageStyle').textContent = `@page{size:A4 ${S.opt.orient};margin:0}`; window.print(); }
+
+/* ================= panel ================= */
+const TABS = [['routine', 'রুটিন'], ['teachers', 'শিক্ষক'], ['lists', 'ক্লাস ও রুম'], ['time', 'দিন ও সময়'], ['design', 'ডিজাইন']];
+function txt(val, set, attrs = {}) {
+  let snap = null;
+  const done = () => { if (snap && snap !== JSON.stringify(S)) { hist.push(snap); fut.length = 0; renderTop(); } snap = JSON.stringify(S); };
+  return h(attrs.area ? 'textarea' : 'input', { type: 'text', ...attrs, value: val,
+    onfocus() { snap = JSON.stringify(S); },
+    oninput(e) { set(e.target.value); save(); renderSheet(); },
+    onchange: done, onblur: done });
+}
+const sec = (title, ...c) => h('div', { class: 'sec' }, h('h3', {}, title), c);
+const del = (fn, title = 'মুছুন') => h('button', { class: 'btn ico', title, onclick: fn }, '✕');
+
+function renderPanel() {
+  $('#tabs').replaceChildren(...TABS.map(([k, n]) => h('button', { class: tab === k ? 'on' : '', onclick() { tab = k; renderPanel(); } }, n)));
+  const b = $('#pbody'), sc = b.scrollTop;
+  b.replaceChildren({ routine: tabRoutine, teachers: tabTeachers, lists: tabLists, time: tabTime, design: tabDesign }[tab]());
+  b.scrollTop = sc;
+}
+
+function tabRoutine() {
+  const box = h('div'), d = sel && S.days.find(x => x.id === sel.d && x.on), p = sel && S.periods.find(x => x.id === sel.p && !x.brk);
+  if (!d || !p) {
+    box.append(h('div', { class: 'hint' }, h('b', {}, 'শুরু করুন: '), 'ডান পাশের রুটিনের যেকোনো ঘরে ক্লিক করুন। তারপর এখানে ক্লাস, রুম ও শিক্ষক বেছে নিন।', h('br'), h('br'),
+      '• ক্লাস টেনে (drag) অন্য ঘরে সরানো যায়; ', h('kbd', {}, 'Ctrl'), ' চেপে টানলে কপি হবে', h('br'),
+      '• ', h('kbd', {}, '←↑↓→'), ' ঘর বদল, ', h('kbd', {}, 'Ctrl+C'), '/', h('kbd', {}, 'Ctrl+V'), ' ঘর কপি-পেস্ট, ', h('kbd', {}, 'Delete'), ' ঘর খালি', h('br'),
+      '• ', h('kbd', {}, 'Ctrl+Z'), ' আনডু'));
+  } else {
+    const es = cell(d.id, p.id), cnt = f => es.reduce((m, e) => (e[f] && (m[e[f]] = (m[e[f]] || 0) + 1), m), {});
+    const tc = cnt('t'), rc = cnt('r'), cc = cnt('c');
+    const set = (e, f, v) => mutate(() => { e[f] = v; });
+    box.append(h('div', { class: 'slot' }, h('b', {}, d.name), h('span', {}, p.label)));
+    box.append(sec(`এই পিরিয়ডের ক্লাস (${es.length})`,
+      es.map(e => h('div', { class: 'erow' + (tc[e.t] > 1 || rc[e.r] > 1 || cc[e.c] > 1 ? ' bad' : '') },
+        h('div', { class: 'bar', style: `background:${(T(e.t) || {}).color || '#999'}` }),
+        h('select', { title: 'ক্লাস', value: e.c, onchange(ev) { set(e, 'c', ev.target.value); } }, S.classes.map(c => h('option', { value: c.id }, c.name))),
+        h('select', { title: 'রুম', value: e.r, onchange(ev) { set(e, 'r', ev.target.value); } }, h('option', { value: '' }, '— রুম —'),
+          [...new Set([...S.rooms, e.r].filter(Boolean))].map(r => h('option', { value: r }, r + (rc[r] && e.r !== r ? ' ⚠' : '')))),
+        h('select', { title: 'শিক্ষক', value: e.t, onchange(ev) { set(e, 't', ev.target.value); } },
+          S.teachers.map(t => h('option', { value: t.id }, `${t.code} — ${t.name}` + (tc[t.id] && e.t !== t.id ? ' ⚠ ব্যস্ত' : '')))),
+        del(() => mutate(() => { es.splice(es.indexOf(e), 1); })))),
+      h('button', { class: 'btn dash', onclick: () => addEntry() }, '+ ক্লাস যোগ করুন')));
+    const free = S.teachers.filter(t => !tc[t.id]);
+    box.append(sec('এই পিরিয়ডে ফাঁকা শিক্ষক',
+      free.length ? h('div', { class: 'row' }, free.map(t => h('button', { class: 'chip', title: 'ক্লিক করলে এই শিক্ষকের ক্লাস যোগ হবে', onclick: () => addEntry(t.id) }, h('i', { style: `background:${t.color}` }), '+ ' + t.code)))
+                  : h('span', { style: 'color:var(--muted)' }, 'সবাই ক্লাসে আছেন।')));
+    box.append(sec('ঘরের কাজ', h('div', { class: 'row' },
+      h('button', { class: 'btn', onclick: copyCell }, '⧉ কপি'),
+      h('button', { class: 'btn', disabled: !clip, onclick: pasteCell }, '⎘ পেস্ট'),
+      h('button', { class: 'btn danger', disabled: !es.length, onclick: clearCell }, '🗑 ঘর খালি করুন'))));
+  }
+  const cf = conflicts();
+  box.append(sec(`সংঘর্ষ পরীক্ষা (${cf.length})`, cf.length
+    ? cf.map(c => h('div', { class: 'cf', onclick() { sel = { d: c.d, p: c.p }; renderAll(); } }, '⚠', h('span', {}, c.text)))
+    : h('div', { class: 'ok' }, '✓ কোনো সংঘর্ষ নেই — একই সময়ে কোনো শিক্ষক, রুম বা ক্লাস দু’বার পড়েনি।')));
+  return box;
+}
+function addEntry(tid) {
+  if (!sel) return;
+  if (!S.teachers.length || !S.classes.length) return toast('আগে শিক্ষক ও ক্লাস যোগ করুন');
+  mutate(() => {
+    const es = cell(sel.d, sel.p), usedT = es.map(e => e.t), usedC = es.map(e => e.c);
+    es.push({ id: uid(), c: (S.classes.find(c => !usedC.includes(c.id)) || S.classes[0]).id, r: '', t: tid || (S.teachers.find(t => !usedT.includes(t.id)) || S.teachers[0]).id });
+  });
+}
+function copyCell() { if (!sel) return; clip = JSON.stringify(cell(sel.d, sel.p)); toast('ঘর কপি হয়েছে'); renderPanel(); }
+function pasteCell() { if (!sel || !clip) return; mutate(() => { S.grid[key(sel.d, sel.p)] = JSON.parse(clip).map(e => ({ ...e, id: uid() })); }); }
+function clearCell() { if (!sel || !cell(sel.d, sel.p).length) return; mutate(() => { S.grid[key(sel.d, sel.p)] = []; }); }
+
+function tabTeachers() {
+  const D = days(), P = pers();
+  const rows = S.teachers.map(t => { const per = D.map(d => P.reduce((n, p) => n + (S.grid[key(d.id, p.id)] || []).filter(e => e.t === t.id).length, 0)); return { t, per, tot: per.reduce((a, b) => a + b, 0) }; });
+  const max = Math.max(1, ...rows.map(r => r.tot));
+  return h('div', {},
+    sec('শিক্ষক তালিকা',
+      h('div', { class: 'trow', style: 'color:var(--muted);font-size:12px;font-weight:700;margin-bottom:2px' }, h('span', {}, 'রঙ'), h('span', {}, 'কোড'), h('span', {}, 'নাম'), h('span')),
+      S.teachers.map(t => h('div', { class: 'trow' },
+        h('input', { type: 'color', value: t.color, onchange(e) { mutate(() => { t.color = e.target.value; }); } }),
+        txt(t.code, v => { t.code = v; }, { maxlength: 6 }),
+        txt(t.name, v => { t.name = v; }),
+        del(() => {
+          const n = Object.values(S.grid).flat().filter(e => e.t === t.id).length;
+          if (n && !confirm(`${t.name}-এর ${n}টি ক্লাস রুটিন থেকে মুছে যাবে। নিশ্চিত?`)) return;
+          mutate(() => { S.teachers = S.teachers.filter(x => x !== t); for (const k in S.grid) S.grid[k] = S.grid[k].filter(e => e.t !== t.id); if (hl === t.id) hl = ''; if (view.id === t.id) view = { type: 'all', id: '' }; });
+        }))),
+      h('button', { class: 'btn dash', onclick: () => mutate(() => { S.teachers.push({ id: 't_' + uid(), code: 'XX', name: 'নতুন শিক্ষক', color: PALETTE[S.teachers.length % PALETTE.length] }); }) }, '+ শিক্ষক যোগ করুন')),
+    sec('সাপ্তাহিক ক্লাসের চাপ',
+      h('table', { class: 'st' },
+        h('thead', {}, h('tr', {}, h('th', {}, 'শিক্ষক'), D.map(d => h('th', {}, d.name.slice(0, 3))), h('th', {}, 'মোট'), h('th'))),
+        h('tbody', {}, rows.map(r => h('tr', { title: 'ক্লিক করলে হাইলাইট হবে', onclick() { hl = hl === r.t.id ? '' : r.t.id; renderTop(); renderSheet(); } },
+          h('td', {}, h('b', { style: `color:${r.t.color}` }, r.t.code)), r.per.map(n => h('td', {}, n || '·')), h('td', {}, h('b', {}, r.tot)),
+          h('td', {}, h('div', { class: 'load' }, h('i', { style: `width:${r.tot / max * 100}%;background:${r.t.color}` }))))))),
+      h('p', { style: 'color:var(--muted);font-size:12.5px;margin:8px 0 0' }, 'উপরের বারের ড্রপডাউন থেকে যেকোনো শিক্ষকের আলাদা রুটিন বেছে প্রিন্ট করা যায়।')));
+}
+
+function tabLists() {
+  return h('div', { class: 'two' },
+    sec('ক্লাস',
+      S.classes.map(c => h('div', { class: 'lrow' }, txt(c.name, v => { c.name = v; }),
+        del(() => {
+          const n = Object.values(S.grid).flat().filter(e => e.c === c.id).length;
+          if (n && !confirm(`${c.name}-এর ${n}টি ক্লাস রুটিন থেকে মুছে যাবে। নিশ্চিত?`)) return;
+          mutate(() => { S.classes = S.classes.filter(x => x !== c); for (const k in S.grid) S.grid[k] = S.grid[k].filter(e => e.c !== c.id); if (view.id === c.id) view = { type: 'all', id: '' }; });
+        }))),
+      h('button', { class: 'btn dash', onclick: () => mutate(() => { S.classes.push({ id: 'c_' + uid(), name: 'নতুন' }); }) }, '+ ক্লাস')),
+    sec('রুম',
+      S.rooms.map((r, i) => h('div', { class: 'lrow' },
+        txt(r, v => { const old = S.rooms[i]; S.rooms[i] = v; for (const k in S.grid) S.grid[k].forEach(e => { if (e.r === old) e.r = v; }); }),
+        del(() => mutate(() => { S.rooms.splice(i, 1); })))),
+      h('button', { class: 'btn dash', onclick: () => mutate(() => { S.rooms.push('000'); }) }, '+ রুম')));
+}
+
+function tabTime() {
+  const mv = (i, by) => mutate(() => { const a = S.periods, j = i + by; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; });
+  return h('div', {},
+    sec('কর্মদিবস', S.days.map(d => h('div', { class: 'drow' },
+      h('input', { type: 'checkbox', checked: d.on, style: 'width:17px;height:17px;accent-color:var(--acc)', onchange(e) { mutate(() => { d.on = e.target.checked; }); } }),
+      txt(d.name, v => { d.name = v; })))),
+    sec('পিরিয়ড ও সময়',
+      S.periods.map((p, i) => h('div', { class: 'prow' },
+        txt(p.label, v => { p.label = v; }),
+        h('label', { class: 'ck', style: 'padding:0;font-size:12.5px', title: 'এই কলামটি বিরতি হিসেবে দেখাবে' },
+          h('input', { type: 'checkbox', checked: p.brk, onchange(e) { mutate(() => { p.brk = e.target.checked; }); } }), 'বিরতি'),
+        h('button', { class: 'btn ico n', title: 'আগে আনুন', onclick: () => mv(i, -1) }, '↑'),
+        h('button', { class: 'btn ico n', title: 'পরে নিন', onclick: () => mv(i, 1) }, '↓'),
+        del(() => {
+          const n = S.days.reduce((s, d) => s + (S.grid[key(d.id, p.id)] || []).length, 0);
+          if (n && !confirm(`এই পিরিয়ডের ${n}টি ক্লাস মুছে যাবে। নিশ্চিত?`)) return;
+          mutate(() => { S.periods.splice(i, 1); S.days.forEach(d => delete S.grid[key(d.id, p.id)]); });
+        }))),
+      h('button', { class: 'btn dash', onclick: () => mutate(() => { S.periods.push({ id: 'p_' + uid(), label: '00.00–00.00', brk: false }); }) }, '+ পিরিয়ড যোগ করুন')));
+}
+
+function tabDesign() {
+  const o = S.opt, ck = (k, t) => h('label', { class: 'ck' }, h('input', { type: 'checkbox', checked: o[k], onchange(e) { mutate(() => { o[k] = e.target.checked; }); } }), t);
+  const fsLbl = h('b', {}, o.fs + 'px');
+  return h('div', {},
+    sec('শিরোনাম',
+      h('span', { class: 'lbl' }, 'বিভাগের নাম'), txt(S.head.l1, v => { S.head.l1 = v; }),
+      h('span', { class: 'lbl' }, 'কলেজের নাম'), txt(S.head.l2, v => { S.head.l2 = v; }),
+      h('span', { class: 'lbl' }, 'রুটিনের শিরোনাম'), txt(S.head.title, v => { S.head.title = v; }),
+      h('span', { class: 'lbl' }, 'কার্যকরের তারিখ'), txt(S.head.eff, v => { S.head.eff = v; }),
+      h('span', { class: 'lbl' }, 'স্বাক্ষরের অংশ'), txt(S.head.sign, v => { S.head.sign = v; }, { area: true }),
+      h('span', { class: 'lbl' }, 'লোগো'),
+      h('div', { class: 'row' },
+        h('label', { class: 'btn' }, '🖼 লোগো বাছুন', h('input', { type: 'file', accept: 'image/*', style: 'display:none', onchange(e) {
+          const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+          r.onload = () => { logo = r.result; try { localStorage.setItem(LSL, logo); } catch (x) { toast('ছবিটি বড় — সেভ থাকবে না, তবে প্রিন্ট হবে'); } renderAll(); };
+          r.readAsDataURL(f);
+        } })),
+        logo ? h('button', { class: 'btn danger', onclick() { logo = ''; localStorage.removeItem(LSL); renderAll(); } }, 'লোগো সরান') : null)),
+    sec('পৃষ্ঠা ও চেহারা',
+      h('div', { class: 'row', style: 'margin-bottom:8px' }, h('span', { style: 'font-weight:600' }, 'A4:'),
+        h('div', { class: 'seg' },
+          h('button', { class: o.orient === 'landscape' ? 'on' : '', onclick: () => mutate(() => { o.orient = 'landscape'; }) }, 'আড়াআড়ি'),
+          h('button', { class: o.orient === 'portrait' ? 'on' : '', onclick: () => mutate(() => { o.orient = 'portrait'; }) }, 'লম্বালম্বি'))),
+      ck('auto', 'অটো-ফিট — লেখা নিজে থেকে এক পৃষ্ঠায় আঁটবে'),
+      o.auto ? null : h('div', { class: 'row' }, 'ফন্ট সাইজ', h('input', { type: 'range', min: 7, max: 18, step: .5, value: o.fs, style: 'flex:1;accent-color:var(--acc)',
+        oninput(e) { o.fs = +e.target.value; fsLbl.textContent = o.fs + 'px'; save(); fit(); } }), fsLbl),
+      ck('color', 'শিক্ষক অনুযায়ী রঙ (সাদা-কালো প্রিন্টের জন্য বন্ধ রাখুন)'),
+      ck('zebra', 'এক সারি পরপর ধূসর'),
+      ck('legend', 'নিচে শিক্ষকদের তালিকা দেখান')),
+    sec('ডেটা',
+      h('div', { class: 'row' },
+        h('button', { class: 'btn', onclick() {
+          const a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify({ S, logo }, null, 1)], { type: 'application/json' })), download: 'class-routine-backup.json' });
+          document.body.append(a); a.click(); a.remove();
+        } }, '⬇ ব্যাকআপ সেভ'),
+        h('label', { class: 'btn' }, '⬆ ব্যাকআপ খুলুন', h('input', { type: 'file', accept: '.json,application/json', style: 'display:none', onchange(e) {
+          const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+          r.onload = () => { try { const j = JSON.parse(r.result), n = j.S || j; if (!n.teachers || !n.grid || !n.periods) throw 0;
+            mutate(() => { S = n; }); if (j.logo != null) { logo = j.logo; try { localStorage.setItem(LSL, logo); } catch (x) {} renderAll(); } toast('ব্যাকআপ খোলা হয়েছে');
+          } catch (x) { toast('ফাইলটি সঠিক নয়'); } };
+          r.readAsText(f);
+        } })),
+        h('button', { class: 'btn danger', onclick() { if (confirm('সব পরিবর্তন মুছে শুরুর রুটিনে ফিরে যাবে। নিশ্চিত?')) mutate(() => { S = defaults(); sel = null; view = { type: 'all', id: '' }; hl = ''; }); } }, '↺ শুরুর রুটিন')),
+      h('p', { style: 'color:var(--muted);font-size:12.5px;margin:8px 0 0' }, 'সব পরিবর্তন এই ব্রাউজারে নিজে থেকেই সেভ হয়। অন্য কম্পিউটারে নিতে ব্যাকআপ ফাইল ব্যবহার করুন।')));
+}
+
+/* ================= keyboard ================= */
+document.addEventListener('keydown', e => {
+  const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName), k = e.key.toLowerCase();
+  if (e.ctrlKey && k === 'z' && !typing) { e.preventDefault(); undo(); return; }
+  if (e.ctrlKey && k === 'y' && !typing) { e.preventDefault(); redo(); return; }
+  if (e.ctrlKey && k === 'p') { e.preventDefault(); doPrint(); return; }
+  if (typing || !sel) return;
+  if (e.ctrlKey && k === 'c') { copyCell(); return; }
+  if (e.ctrlKey && k === 'v') { pasteCell(); return; }
+  if (e.key === 'Delete') { clearCell(); return; }
+  if (e.key === 'Escape') { sel = null; renderAll(); return; }
+  const mv = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[e.key];
+  if (!mv) return;
+  e.preventDefault();
+  const D = days(), P = pers();
+  const di = Math.min(D.length - 1, Math.max(0, D.findIndex(d => d.id === sel.d) + mv[0]));
+  const pi = Math.min(P.length - 1, Math.max(0, P.findIndex(p => p.id === sel.p) + mv[1]));
+  if (D[di] && P[pi]) { sel = { d: D[di].id, p: P[pi].id }; renderAll(); }
+});
+
+/* ================= boot ================= */
+function renderAll() { renderTop(); renderPanel(); renderSheet(); }
+window.addEventListener('resize', scale);
+renderAll();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+</script>
+</body>
+</html>
